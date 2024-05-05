@@ -183,8 +183,81 @@ features_df <- features_df[order(features_df$Importance, decreasing = TRUE), ]
 
 features_df
 
-#Download the dataset preprocess and ready to work 
-write.csv(df, file = "F:/1-2024/data mining/project/archive/df.csv", row.names = FALSE)
 
 
 
+df <- read.csv('F:/1-2024/data mining/project/archive/df.csv', encoding = 'latin1')
+head(df)
+
+df <- subset(df, select = -c(RegionSouth, Ship.ModeSame.Day, Ship.ModeFirst.Class, Segment, Ship.ModeStandard.Class))
+head(df) 
+
+#Remove outliers: 
+remove_outliers <- function(data, cols, threshold = 20) {
+  for (col in cols) {
+    z_scores <- scale(data[[col]])
+    data <- data[abs(z_scores) < threshold, ]
+  }
+  return(data)
+}
+
+# Columns to remove outliers from
+columns_to_remove_outliers <- c("Sales", "Profit")
+
+# Remove outliers from selected columns
+df <- remove_outliers(df, columns_to_remove_outliers) 
+summary(df)
+
+hist(df$Profit, freq = FALSE, main = "Histogram of Profit", xlab = "Profit")
+
+# Overlay normal probability density function
+mu <- mean(df$Profit)
+sigma <- sd(df$Profit)
+x <- seq(min(df$Profit), max(df$Profit), length.out = 100)
+y <- dnorm(x, mean = mu, sd = sigma)
+lines(x, y, col = "red", lwd = 2)
+
+#sales histogram 
+hist(df$Sales, freq = FALSE, main = "Histogram of Sales", xlab = "Sales")
+
+# Overlay density function
+mu <- mean(df$Sales)
+sigma <- sd(df$Sales)
+x <- seq(min(df$Sales), max(df$Sales), length.out = 100)
+y <- dnorm(x, mean = mu, sd = sigma)
+lines(x, y, col = "red", lwd = 2)
+
+
+#define a function to normalize the columns sales and Profit
+min_max_normalize <- function(x) {
+  (x - min(x)) / (max(x) - min(x))
+}
+df$Profit <- min_max_normalize(df$Profit)
+df$Sales <- min_max_normalize(df$Sales)
+
+head(df)
+
+# see the new distribution after doing normalization
+hist(df$Profit, freq = FALSE, main = "Histogram of Profit", xlab = "Profit")
+mu <- mean(df$Profit)
+sigma <- sd(df$Profit)
+x <- seq(min(df$Profit), max(df$Profit), length.out = 100)
+y <- dnorm(x, mean = mu, sd = sigma)
+lines(x, y, col = "red", lwd = 2)
+
+
+#sales histogram 
+hist(df$Sales, freq = FALSE, main = "Histogram of Sales", xlab = "Sales")
+
+
+mu <- mean(df$Sales)
+sigma <- sd(df$Sales)
+x <- seq(min(df$Sales), max(df$Sales), length.out = 100)
+y <- dnorm(x, mean = mu, sd = sigma)
+lines(x, y, col = "red", lwd = 2) 
+
+#Download the dataset preprocess
+write.csv(df, file = "F:/1-2024/data mining/project/archive/df_process.csv", row.names = FALSE)
+
+
+summary(df)
